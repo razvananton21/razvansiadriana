@@ -89,7 +89,6 @@ const EventDetails = () => {
             </div>
             
             <p className="text-gray-700 mb-4">{activeEvent.address}</p>
-            <p className="text-gray-700">{activeEvent.description}</p>
             
             <div className="mt-6">
               <a
