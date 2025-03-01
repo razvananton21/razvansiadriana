@@ -9,15 +9,6 @@
   --secondary: #D4AF37;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #2D2418;
-    --foreground: #F5EFE0;
-    --primary: #D4AF37;
-    --secondary: #8B5A2B;
-  }
-}
-
 body {
   color: var(--foreground);
   background: var(--background);
