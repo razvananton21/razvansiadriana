@@ -1,0 +1,65 @@
+# Wedding Invitation Website
+
+## Tasks
+[X] Set up project structure
+[X] Configure Tailwind CSS
+[X] Create InvitationCard component with flip animation
+[X] Create RSVPForm component with form validation
+[X] Create EventDetails component with calendar integration
+[X] Create Header and Footer components
+[X] Update main page to use all components
+[X] Upgrade to Node.js 18 and Next.js 14.1.0
+[X] Implement PDF display for invitation cards
+
+## Lessons
+- Used framer-motion for animations
+- Used react-hook-form for form validation
+- Used add-to-calendar-button for calendar integration
+- Used react-icons for icons
+- Switched to Node.js 18 for better compatibility with modern packages
+- Used iframe to display PDF files
+- Added download link for the full invitation PDF
+
+## Next Steps
+- Add responsive design improvements
+- Add animations for better user experience
+- Add backend integration for RSVP form
+- Add image optimization
+- Add SEO optimization
+- Add analytics
+- Add testing
+
+# Deployment Options
+
+## Fastest Options (in order of simplicity)
+
+1. **Vercel** - Connect GitHub repo or use `vercel` CLI (requires Node.js 18+)
+   - Best option for Next.js projects
+   - Automatic deployments, previews, analytics
+   - Free tier available
+
+2. **Netlify** - Connect GitHub repo or use drag-and-drop
+   - Simple UI, automatic deployments
+   - Free tier available
+   - Great for static sites
+
+3. **GitHub Pages** - Use the included GitHub Actions workflow
+   - Free for public repositories
+   - Automatic deployments via GitHub Actions
+   - Available at username.github.io/repo-name
+
+4. **Firebase Hosting** - Fast CDN, easy setup
+   - Free tier available
+   - Global CDN
+   - Easy CLI deployment
+
+5. **Surge.sh** - Super simple deployment
+   - Free tier available
+   - One command deployment
+   - Custom domains on free tier
+
+## Local Deployment Script
+- Use `./deploy-local.sh` for manual GitHub Pages deployment
+
+## Documentation
+- See `DEPLOYMENT.md` for detailed instructions on all options 
