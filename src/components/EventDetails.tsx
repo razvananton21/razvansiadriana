@@ -7,7 +7,7 @@ import { MdLocationOn } from 'react-icons/md';
 import { HiOutlineCalendar } from 'react-icons/hi';
 
 const EventDetails = () => {
-  const [activeTab, setActiveTab] = useState('ceremony');
+  const [activeTab, setActiveTab] = useState('civil');
   
   const events = {
     civil: {

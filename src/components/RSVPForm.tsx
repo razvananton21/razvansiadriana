@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { FaTimes, FaCheck, FaUtensils } from 'react-icons/fa';
+import { submitRSVP } from '@/lib/rsvp';
 
 interface RSVPFormProps {
   onClose: () => void;
@@ -9,41 +10,71 @@ interface RSVPFormProps {
 
 const RSVPForm = ({ onClose }: RSVPFormProps) => {
   const [formData, setFormData] = useState({
-    name: '',
+    lastName: '',
+    firstName: '',
     email: '',
-    attending: '',
-    guests: '0',
-    dietaryRestrictions: '',
+    phone: '',
+    attending: 'yes', // Default to yes
+    vegetarianMenu: false, // Changed to boolean for checkbox, default unchecked
+    bringingPlusOne: false, // Changed to boolean for checkbox
     message: ''
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const [debugInfo, setDebugInfo] = useState<string | null>(null);
   
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    // Handle checkbox separately using type assertion
+    if (e.target instanceof HTMLInputElement && e.target.type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setFormData(prev => ({ ...prev, [name]: checked }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
+    setDebugInfo(null);
     
     // Validate form
-    if (!formData.name || !formData.email || !formData.attending) {
+    if (!formData.lastName || !formData.firstName || !formData.email || !formData.phone || !formData.attending) {
       setError('Vă rugăm să completați toate câmpurile obligatorii.');
       setIsSubmitting(false);
       return;
     }
     
-    // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Submit RSVP using the utility function
+      const data = {
+        last_name: formData.lastName,
+        first_name: formData.firstName,
+        email: formData.email,
+        phone: formData.phone,
+        attending: formData.attending === 'yes',
+        vegetarian_menu: formData.vegetarianMenu,
+        bringing_plus_one: formData.bringingPlusOne,
+        message: formData.message
+      };
+      
+      setDebugInfo(`Submitting data: ${JSON.stringify(data)}`);
+      
+      await submitRSVP(data);
+      
       setIsSubmitted(true);
     } catch (err) {
+      console.error('Error submitting form:', err);
       setError('A apărut o eroare. Vă rugăm să încercați din nou.');
+      if (err instanceof Error) {
+        setDebugInfo(`Error: ${err.message}`);
+      } else {
+        setDebugInfo(`Unknown error: ${JSON.stringify(err)}`);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -84,12 +115,25 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
           <form onSubmit={handleSubmit}>
             <div className="space-y-4 mb-6">
               <div>
-                <label htmlFor="name" className="block text-gray-700 mb-1">Nume și Prenume *</label>
+                <label htmlFor="lastName" className="block text-gray-700 mb-1">Nume *</label>
                 <input
                   type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
+                  id="lastName"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="firstName" className="block text-gray-700 mb-1">Prenume *</label>
+                <input
+                  type="text"
+                  id="firstName"
+                  name="firstName"
+                  value={formData.firstName}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   required
@@ -110,56 +154,72 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
               </div>
               
               <div>
-                <label htmlFor="attending" className="block text-gray-700 mb-1">Veți participa? *</label>
-                <select
-                  id="attending"
-                  name="attending"
-                  value={formData.attending}
+                <label htmlFor="phone" className="block text-gray-700 mb-1">Telefon *</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   required
-                >
-                  <option value="">Selectați...</option>
-                  <option value="yes">Da, voi participa</option>
-                  <option value="no">Nu pot participa</option>
-                </select>
+                />
+              </div>
+              
+              <div>
+                <label className="block text-gray-700 mb-1">Veți participa? *</label>
+                <div className="flex gap-4 mt-1">
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      name="attending"
+                      value="yes"
+                      checked={formData.attending === 'yes'}
+                      onChange={handleChange}
+                      className="form-radio text-primary focus:ring-primary h-4 w-4"
+                    />
+                    <span className="ml-2">Da</span>
+                  </label>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      name="attending"
+                      value="no"
+                      checked={formData.attending === 'no'}
+                      onChange={handleChange}
+                      className="form-radio text-primary focus:ring-primary h-4 w-4"
+                    />
+                    <span className="ml-2">Nu</span>
+                  </label>
+                </div>
               </div>
               
               {formData.attending === 'yes' && (
                 <>
                   <div>
-                    <label htmlFor="guests" className="block text-gray-700 mb-1">Număr de invitați</label>
-                    <select
-                      id="guests"
-                      name="guests"
-                      value={formData.guests}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                    >
-                      <option value="0">Doar eu</option>
-                      <option value="1">+1 invitat</option>
-                      <option value="2">+2 invitați</option>
-                      <option value="3">+3 invitați</option>
-                      <option value="4">+4 invitați</option>
-                    </select>
+                    <label className="inline-flex items-center">
+                      <input
+                        type="checkbox"
+                        name="vegetarianMenu"
+                        checked={formData.vegetarianMenu}
+                        onChange={handleChange}
+                        className="form-checkbox text-primary focus:ring-primary h-4 w-4"
+                      />
+                      <span className="ml-2">Meniu vegetarian</span>
+                    </label>
                   </div>
                   
                   <div>
-                    <label htmlFor="dietaryRestrictions" className="block text-gray-700 mb-1">
-                      <div className="flex items-center gap-2">
-                        <FaUtensils className="text-primary" />
-                        <span>Restricții alimentare sau alergii</span>
-                      </div>
+                    <label className="inline-flex items-center">
+                      <input
+                        type="checkbox"
+                        name="bringingPlusOne"
+                        checked={formData.bringingPlusOne}
+                        onChange={handleChange}
+                        className="form-checkbox text-primary focus:ring-primary h-4 w-4"
+                      />
+                      <span className="ml-2">Voi veni însoțit</span>
                     </label>
-                    <input
-                      type="text"
-                      id="dietaryRestrictions"
-                      name="dietaryRestrictions"
-                      value={formData.dietaryRestrictions}
-                      onChange={handleChange}
-                      placeholder="Vegetarian, alergii, etc."
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
                   </div>
                 </>
               )}
@@ -182,6 +242,12 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
               <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg flex items-center gap-2">
                 <FaTimes className="text-red-500 flex-shrink-0" />
                 <p>{error}</p>
+              </div>
+            )}
+            
+            {debugInfo && (
+              <div className="mb-4 p-3 bg-gray-50 text-gray-700 rounded-lg text-xs font-mono overflow-auto">
+                <p>{debugInfo}</p>
               </div>
             )}
             

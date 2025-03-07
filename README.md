@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Wedding Invitation Template
 
-## Getting Started
+A beautiful, responsive wedding invitation website with RSVP functionality built with Next.js and Supabase.
 
-First, run the development server:
+## Features
+
+- Responsive design for all devices
+- Event details with location maps
+- RSVP form with database storage
+- Beautiful animations
+- Admin page to view and manage RSVP responses
+
+## Setup
+
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Set Up Supabase
+
+1. Create a free account at [supabase.com](https://supabase.com/)
+2. Create a new project
+3. Get your project URL and anon key from the API settings
+4. Create a table for RSVP responses with the following SQL:
+
+```sql
+CREATE TABLE rsvp_responses (
+  id SERIAL PRIMARY KEY,
+  last_name TEXT NOT NULL,
+  first_name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  attending BOOLEAN NOT NULL,
+  vegetarian_menu BOOLEAN DEFAULT FALSE,
+  bringing_plus_one BOOLEAN DEFAULT FALSE,
+  message TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+5. Update your `.env.local` file with your Supabase credentials:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### 3. Run the Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the site.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4. Build for Production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+```
 
-## Learn More
+## Viewing RSVP Responses
 
-To learn more about Next.js, take a look at the following resources:
+There are two ways to view RSVP responses:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 1. Supabase Dashboard
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Log in to your Supabase dashboard
+2. Go to the Table Editor
+3. Select the `rsvp_responses` table
+4. You can view, filter, and export all responses
 
-## Deploy on Vercel
+### 2. Admin Page
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The site includes a simple admin page to view and manage RSVP responses:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Navigate to `/admin` on your site
+2. Enter the password (default: `wedding2025`)
+3. View all responses, statistics, and manage RSVPs
+
+To change the admin password, edit the `src/app/admin/page.tsx` file and update the password in the `handleLogin` function.
+
+## Customization
+
+- Update event details in `src/components/EventDetails.tsx`
+- Modify colors in `tailwind.config.js`
+- Replace images in the `public/images` directory
+- Change the admin password in `src/app/admin/page.tsx`
