@@ -1,0 +1,39 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" fill="none"/>
+  
+  <!-- Subtle texture pattern -->
+  <g opacity="0.05">
+    <!-- Dots pattern -->
+    <circle cx="25" cy="25" r="1" fill="#5a6b46"/>
+    <circle cx="75" cy="25" r="1" fill="#5a6b46"/>
+    <circle cx="125" cy="25" r="1" fill="#5a6b46"/>
+    <circle cx="175" cy="25" r="1" fill="#5a6b46"/>
+    
+    <circle cx="50" cy="50" r="1" fill="#5a6b46"/>
+    <circle cx="100" cy="50" r="1" fill="#5a6b46"/>
+    <circle cx="150" cy="50" r="1" fill="#5a6b46"/>
+    
+    <circle cx="25" cy="75" r="1" fill="#5a6b46"/>
+    <circle cx="75" cy="75" r="1" fill="#5a6b46"/>
+    <circle cx="125" cy="75" r="1" fill="#5a6b46"/>
+    <circle cx="175" cy="75" r="1" fill="#5a6b46"/>
+    
+    <circle cx="50" cy="100" r="1" fill="#5a6b46"/>
+    <circle cx="100" cy="100" r="1" fill="#5a6b46"/>
+    <circle cx="150" cy="100" r="1" fill="#5a6b46"/>
+    
+    <circle cx="25" cy="125" r="1" fill="#5a6b46"/>
+    <circle cx="75" cy="125" r="1" fill="#5a6b46"/>
+    <circle cx="125" cy="125" r="1" fill="#5a6b46"/>
+    <circle cx="175" cy="125" r="1" fill="#5a6b46"/>
+    
+    <circle cx="50" cy="150" r="1" fill="#5a6b46"/>
+    <circle cx="100" cy="150" r="1" fill="#5a6b46"/>
+    <circle cx="150" cy="150" r="1" fill="#5a6b46"/>
+    
+    <circle cx="25" cy="175" r="1" fill="#5a6b46"/>
+    <circle cx="75" cy="175" r="1" fill="#5a6b46"/>
+    <circle cx="125" cy="175" r="1" fill="#5a6b46"/>
+    <circle cx="175" cy="175" r="1" fill="#5a6b46"/>
+  </g>
+</svg> 

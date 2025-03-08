@@ -1,0 +1,7 @@
+---
+description: Global guidelines, for every change on any file
+globs: 
+alwaysApply: true
+---
+
+never run npm run dev by yourself - i will manually refresh the dev env - more of it, it automatically applies changes, no need to reload

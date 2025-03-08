@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FaTimes, FaCheck, FaUtensils } from 'react-icons/fa';
+import { FaTimes, FaCheck, FaUtensils, FaRegSadTear, FaHeart } from 'react-icons/fa';
 import { submitRSVP } from '@/lib/rsvp';
 
 interface RSVPFormProps {
@@ -24,6 +24,7 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState('');
   const [debugInfo, setDebugInfo] = useState<string | null>(null);
+  const [submittedAttending, setSubmittedAttending] = useState<boolean>(true);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -51,12 +52,13 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
     
     try {
       // Submit RSVP using the utility function
+      const isAttending = formData.attending === 'yes';
       const data = {
         last_name: formData.lastName,
         first_name: formData.firstName,
         email: formData.email,
         phone: formData.phone,
-        attending: formData.attending === 'yes',
+        attending: isAttending,
         vegetarian_menu: formData.vegetarianMenu,
         bringing_plus_one: formData.bringingPlusOne,
         message: formData.message
@@ -66,6 +68,12 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
       
       await submitRSVP(data);
       
+      // Store the attendance status and name in localStorage
+      localStorage.setItem('rsvpStatus', isAttending ? 'attending' : 'not-attending');
+      localStorage.setItem('rsvpName', formData.firstName);
+      
+      // Store the attendance status for the confirmation message
+      setSubmittedAttending(isAttending);
       setIsSubmitted(true);
     } catch (err) {
       console.error('Error submitting form:', err);
@@ -81,15 +89,27 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
   };
   
   return (
-    <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-      <div className="p-6">
+    <div className="bg-[#f8f5eb] rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-[#5a6b46]/20">
+      <div className="p-6 relative">
+        {/* Decorative elements */}
+        <div className="absolute top-0 left-0 w-16 h-16 opacity-10">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 30C15 25 25 28 30 35C25 38 15 38 10 30Z" fill="#5a6b46"/>
+          </svg>
+        </div>
+        <div className="absolute bottom-0 right-0 w-16 h-16 opacity-10 transform rotate-180">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 30C15 25 25 28 30 35C25 38 15 38 10 30Z" fill="#5a6b46"/>
+          </svg>
+        </div>
+        
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-serif text-primary">
+          <h2 className="text-2xl font-serif text-[#5a6b46] italic">
             {isSubmitted ? 'Mulțumim!' : 'Confirmare Participare'}
           </h2>
           <button 
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-[#5a6b46]/70 hover:text-[#5a6b46] transition-colors"
             aria-label="Închide"
           >
             <FaTimes />
@@ -98,77 +118,99 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
         
         {isSubmitted ? (
           <div className="text-center py-6">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <FaCheck className="text-green-600 text-2xl" />
+            <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${
+              submittedAttending ? 'bg-[#5a6b46]/10' : 'bg-amber-100'
+            }`}>
+              {submittedAttending ? (
+                <FaHeart className="text-3xl text-[#5a6b46]" />
+              ) : (
+                <FaRegSadTear className="text-3xl text-amber-600" />
+              )}
             </div>
-            <p className="text-gray-700 mb-6">
-              Răspunsul dumneavoastră a fost înregistrat. Abia așteptăm să vă vedem la nunta noastră!
-            </p>
+            
+            {submittedAttending ? (
+              <div>
+                <h3 className="text-xl font-serif text-[#5a6b46] mb-3 italic">Ne vedem la nuntă!</h3>
+                <p className="text-[#5a6b46]/80 mb-6">
+                  Răspunsul dumneavoastră a fost înregistrat. Abia așteptăm să sărbătorim împreună această zi specială!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <h3 className="text-xl font-serif text-amber-700 mb-3 italic">Ne pare rău că nu puteți veni</h3>
+                <p className="text-[#5a6b46]/80 mb-6">
+                  Răspunsul dumneavoastră a fost înregistrat. Vă mulțumim pentru răspuns și vă vom ține la curent cu evenimentele viitoare!
+                </p>
+              </div>
+            )}
+            
             <button 
               onClick={onClose}
-              className="px-6 py-2 bg-primary text-white rounded-full hover:bg-opacity-90 transition-colors"
+              className={`px-6 py-2 text-[#f8f5eb] rounded-full hover:bg-opacity-90 transition-colors shadow-sm ${
+                submittedAttending ? 'bg-[#5a6b46]' : 'bg-amber-600'
+              }`}
             >
               Închide
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit}>
-            <div className="space-y-4 mb-6">
+          <form onSubmit={handleSubmit} className="relative">
+            <div className="space-y-5 mb-6">
               <div>
-                <label htmlFor="lastName" className="block text-gray-700 mb-1">Nume *</label>
+                <label htmlFor="lastName" className="block text-[#5a6b46] mb-1 font-medium">Nume *</label>
                 <input
                   type="text"
                   id="lastName"
                   name="lastName"
                   value={formData.lastName}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-2 bg-[#f8f5eb] border border-[#5a6b46]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a6b46]/50 focus:border-transparent"
                   required
                 />
               </div>
               
               <div>
-                <label htmlFor="firstName" className="block text-gray-700 mb-1">Prenume *</label>
+                <label htmlFor="firstName" className="block text-[#5a6b46] mb-1 font-medium">Prenume *</label>
                 <input
                   type="text"
                   id="firstName"
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-2 bg-[#f8f5eb] border border-[#5a6b46]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a6b46]/50 focus:border-transparent"
                   required
                 />
               </div>
               
               <div>
-                <label htmlFor="email" className="block text-gray-700 mb-1">Email *</label>
+                <label htmlFor="email" className="block text-[#5a6b46] mb-1 font-medium">Email *</label>
                 <input
                   type="email"
                   id="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-2 bg-[#f8f5eb] border border-[#5a6b46]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a6b46]/50 focus:border-transparent"
                   required
                 />
               </div>
               
               <div>
-                <label htmlFor="phone" className="block text-gray-700 mb-1">Telefon *</label>
+                <label htmlFor="phone" className="block text-[#5a6b46] mb-1 font-medium">Telefon *</label>
                 <input
                   type="tel"
                   id="phone"
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-2 bg-[#f8f5eb] border border-[#5a6b46]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a6b46]/50 focus:border-transparent"
                   required
                 />
               </div>
               
-              <div>
-                <label className="block text-gray-700 mb-1">Veți participa? *</label>
-                <div className="flex gap-4 mt-1">
+              <div className="bg-[#5a6b46]/5 p-4 rounded-lg border border-[#5a6b46]/10">
+                <label className="block text-[#5a6b46] mb-2 font-medium">Veți participa? *</label>
+                <div className="flex gap-6 mt-1">
                   <label className="inline-flex items-center">
                     <input
                       type="radio"
@@ -176,9 +218,9 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
                       value="yes"
                       checked={formData.attending === 'yes'}
                       onChange={handleChange}
-                      className="form-radio text-primary focus:ring-primary h-4 w-4"
+                      className="form-radio text-[#5a6b46] focus:ring-[#5a6b46] h-4 w-4"
                     />
-                    <span className="ml-2">Da</span>
+                    <span className="ml-2 text-[#5a6b46]">Da</span>
                   </label>
                   <label className="inline-flex items-center">
                     <input
@@ -187,87 +229,81 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
                       value="no"
                       checked={formData.attending === 'no'}
                       onChange={handleChange}
-                      className="form-radio text-primary focus:ring-primary h-4 w-4"
+                      className="form-radio text-[#5a6b46] focus:ring-[#5a6b46] h-4 w-4"
                     />
-                    <span className="ml-2">Nu</span>
+                    <span className="ml-2 text-[#5a6b46]">Nu</span>
                   </label>
                 </div>
               </div>
               
               {formData.attending === 'yes' && (
-                <>
-                  <div>
-                    <label className="inline-flex items-center">
+                <div className="bg-[#5a6b46]/5 p-4 rounded-lg border border-[#5a6b46]/10">
+                  <p className="text-[#5a6b46] mb-3 font-medium">Opțiuni suplimentare</p>
+                  <div className="space-y-3">
+                    <label className="flex items-center">
                       <input
                         type="checkbox"
                         name="vegetarianMenu"
                         checked={formData.vegetarianMenu}
                         onChange={handleChange}
-                        className="form-checkbox text-primary focus:ring-primary h-4 w-4"
+                        className="form-checkbox text-[#5a6b46] focus:ring-[#5a6b46] h-4 w-4 rounded"
                       />
-                      <span className="ml-2">Meniu vegetarian</span>
+                      <span className="ml-2 text-[#5a6b46]/90">Meniu vegetarian</span>
                     </label>
-                  </div>
-                  
-                  <div>
-                    <label className="inline-flex items-center">
+                    
+                    <label className="flex items-center">
                       <input
                         type="checkbox"
                         name="bringingPlusOne"
                         checked={formData.bringingPlusOne}
                         onChange={handleChange}
-                        className="form-checkbox text-primary focus:ring-primary h-4 w-4"
+                        className="form-checkbox text-[#5a6b46] focus:ring-[#5a6b46] h-4 w-4 rounded"
                       />
-                      <span className="ml-2">Voi veni însoțit</span>
+                      <span className="ml-2 text-[#5a6b46]/90">Voi veni însoțit</span>
                     </label>
                   </div>
-                </>
+                </div>
               )}
               
               <div>
-                <label htmlFor="message" className="block text-gray-700 mb-1">Mesaj (opțional)</label>
+                <label htmlFor="message" className="block text-[#5a6b46] mb-1 font-medium">Mesaj (opțional)</label>
                 <textarea
                   id="message"
                   name="message"
                   value={formData.message}
                   onChange={handleChange}
                   rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-2 bg-[#f8f5eb] border border-[#5a6b46]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a6b46]/50 focus:border-transparent"
                   placeholder="Orice informații suplimentare doriți să ne transmiteți..."
                 ></textarea>
               </div>
             </div>
             
             {error && (
-              <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg flex items-center gap-2">
+              <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg flex items-center gap-2 border border-red-100">
                 <FaTimes className="text-red-500 flex-shrink-0" />
                 <p>{error}</p>
               </div>
             )}
             
-            {debugInfo && (
-              <div className="mb-4 p-3 bg-gray-50 text-gray-700 rounded-lg text-xs font-mono overflow-auto">
-                <p>{debugInfo}</p>
-              </div>
-            )}
-            
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 text-gray-600 mr-2 hover:text-gray-800"
-              >
-                Anulează
-              </button>
+            <div className="flex justify-center mt-8">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`px-6 py-2 bg-primary text-white rounded-full font-medium transition-colors ${
-                  isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:bg-primary/90'
+                className={`px-8 py-3 bg-[#5a6b46] text-[#f8f5eb] rounded-full hover:bg-[#5a6b46]/90 transition-colors flex items-center gap-2 shadow-sm ${
+                  isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
                 }`}
               >
-                {isSubmitting ? 'Se trimite...' : 'Trimite'}
+                {isSubmitting ? 'Se trimite...' : 'Trimite răspunsul'}
+                {!isSubmitting && <FaCheck />}
               </button>
+            </div>
+            
+            {/* Decorative divider */}
+            <div className="flex items-center justify-center text-[#5a6b46]/30 my-6">
+              <div className="w-16 h-px bg-[#5a6b46]/20"></div>
+              <FaHeart className="mx-3 text-xs" />
+              <div className="w-16 h-px bg-[#5a6b46]/20"></div>
             </div>
           </form>
         )}
