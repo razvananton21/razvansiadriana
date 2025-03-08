@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { FaTimes, FaCheck, FaUtensils, FaRegSadTear, FaHeart } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 import { submitRSVP } from '@/lib/rsvp';
 
 interface RSVPFormProps {
@@ -89,7 +90,12 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
   };
   
   return (
-    <div className="bg-[#f8f5eb] rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-[#5a6b46]/20">
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.2 }}
+      className="bg-[#f8f5eb] rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-[#5a6b46]/20"
+    >
       <div className="p-6 relative">
         {/* Decorative elements */}
         <div className="absolute top-0 left-0 w-16 h-16 opacity-10">
@@ -107,26 +113,43 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
           <h2 className="text-2xl font-serif text-[#5a6b46] italic">
             {isSubmitted ? 'Mulțumim!' : 'Confirmare Participare'}
           </h2>
-          <button 
+          <motion.button 
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
             onClick={onClose}
             className="text-[#5a6b46]/70 hover:text-[#5a6b46] transition-colors"
             aria-label="Închide"
           >
             <FaTimes />
-          </button>
+          </motion.button>
         </div>
         
         {isSubmitted ? (
-          <div className="text-center py-6">
-            <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${
-              submittedAttending ? 'bg-[#5a6b46]/10' : 'bg-amber-100'
-            }`}>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="text-center py-6"
+          >
+            <motion.div 
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 260, 
+                damping: 20,
+                delay: 0.1 
+              }}
+              className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${
+                submittedAttending ? 'bg-[#5a6b46]/10' : 'bg-amber-100'
+              }`}
+            >
               {submittedAttending ? (
                 <FaHeart className="text-3xl text-[#5a6b46]" />
               ) : (
                 <FaRegSadTear className="text-3xl text-amber-600" />
               )}
-            </div>
+            </motion.div>
             
             {submittedAttending ? (
               <div>
@@ -144,19 +167,21 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
               </div>
             )}
             
-            <button 
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={onClose}
               className={`px-6 py-2 text-[#f8f5eb] rounded-full hover:bg-opacity-90 transition-colors shadow-sm ${
                 submittedAttending ? 'bg-[#5a6b46]' : 'bg-amber-600'
               }`}
             >
               Închide
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
         ) : (
           <form onSubmit={handleSubmit} className="relative">
             <div className="space-y-5 mb-6">
-              <div>
+              <div className="group">
                 <label htmlFor="lastName" className="block text-[#5a6b46] mb-1 font-medium">Nume *</label>
                 <input
                   type="text"
@@ -164,12 +189,12 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
                   name="lastName"
                   value={formData.lastName}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 bg-[#f8f5eb] border border-[#5a6b46]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a6b46]/50 focus:border-transparent"
+                  className="w-full px-4 py-2 bg-[#f8f5eb] border border-[#5a6b46]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a6b46]/50 focus:border-transparent transition-all group-hover:border-[#5a6b46]/50"
                   required
                 />
               </div>
               
-              <div>
+              <div className="group">
                 <label htmlFor="firstName" className="block text-[#5a6b46] mb-1 font-medium">Prenume *</label>
                 <input
                   type="text"
@@ -177,12 +202,12 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 bg-[#f8f5eb] border border-[#5a6b46]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a6b46]/50 focus:border-transparent"
+                  className="w-full px-4 py-2 bg-[#f8f5eb] border border-[#5a6b46]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a6b46]/50 focus:border-transparent transition-all group-hover:border-[#5a6b46]/50"
                   required
                 />
               </div>
               
-              <div>
+              <div className="group">
                 <label htmlFor="email" className="block text-[#5a6b46] mb-1 font-medium">Email *</label>
                 <input
                   type="email"
@@ -190,12 +215,12 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 bg-[#f8f5eb] border border-[#5a6b46]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a6b46]/50 focus:border-transparent"
+                  className="w-full px-4 py-2 bg-[#f8f5eb] border border-[#5a6b46]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a6b46]/50 focus:border-transparent transition-all group-hover:border-[#5a6b46]/50"
                   required
                 />
               </div>
               
-              <div>
+              <div className="group">
                 <label htmlFor="phone" className="block text-[#5a6b46] mb-1 font-medium">Telefon *</label>
                 <input
                   type="tel"
@@ -203,15 +228,15 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 bg-[#f8f5eb] border border-[#5a6b46]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a6b46]/50 focus:border-transparent"
+                  className="w-full px-4 py-2 bg-[#f8f5eb] border border-[#5a6b46]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a6b46]/50 focus:border-transparent transition-all group-hover:border-[#5a6b46]/50"
                   required
                 />
               </div>
               
-              <div className="bg-[#5a6b46]/5 p-4 rounded-lg border border-[#5a6b46]/10">
+              <div className="bg-[#5a6b46]/5 p-4 rounded-lg border border-[#5a6b46]/10 hover:border-[#5a6b46]/20 transition-colors">
                 <label className="block text-[#5a6b46] mb-2 font-medium">Veți participa? *</label>
                 <div className="flex gap-6 mt-1">
-                  <label className="inline-flex items-center">
+                  <label className="inline-flex items-center cursor-pointer hover:text-[#5a6b46] transition-colors">
                     <input
                       type="radio"
                       name="attending"
@@ -222,7 +247,7 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
                     />
                     <span className="ml-2 text-[#5a6b46]">Da</span>
                   </label>
-                  <label className="inline-flex items-center">
+                  <label className="inline-flex items-center cursor-pointer hover:text-[#5a6b46] transition-colors">
                     <input
                       type="radio"
                       name="attending"
@@ -237,10 +262,16 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
               </div>
               
               {formData.attending === 'yes' && (
-                <div className="bg-[#5a6b46]/5 p-4 rounded-lg border border-[#5a6b46]/10">
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="bg-[#5a6b46]/5 p-4 rounded-lg border border-[#5a6b46]/10 hover:border-[#5a6b46]/20 transition-colors"
+                >
                   <p className="text-[#5a6b46] mb-3 font-medium">Opțiuni suplimentare</p>
                   <div className="space-y-3">
-                    <label className="flex items-center">
+                    <label className="flex items-center cursor-pointer hover:text-[#5a6b46] transition-colors">
                       <input
                         type="checkbox"
                         name="vegetarianMenu"
@@ -251,7 +282,7 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
                       <span className="ml-2 text-[#5a6b46]/90">Meniu vegetarian</span>
                     </label>
                     
-                    <label className="flex items-center">
+                    <label className="flex items-center cursor-pointer hover:text-[#5a6b46] transition-colors">
                       <input
                         type="checkbox"
                         name="bringingPlusOne"
@@ -262,10 +293,10 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
                       <span className="ml-2 text-[#5a6b46]/90">Voi veni însoțit</span>
                     </label>
                   </div>
-                </div>
+                </motion.div>
               )}
               
-              <div>
+              <div className="group">
                 <label htmlFor="message" className="block text-[#5a6b46] mb-1 font-medium">Mesaj (opțional)</label>
                 <textarea
                   id="message"
@@ -273,21 +304,27 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
                   value={formData.message}
                   onChange={handleChange}
                   rows={3}
-                  className="w-full px-4 py-2 bg-[#f8f5eb] border border-[#5a6b46]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a6b46]/50 focus:border-transparent"
+                  className="w-full px-4 py-2 bg-[#f8f5eb] border border-[#5a6b46]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a6b46]/50 focus:border-transparent transition-all group-hover:border-[#5a6b46]/50"
                   placeholder="Orice informații suplimentare doriți să ne transmiteți..."
                 ></textarea>
               </div>
             </div>
             
             {error && (
-              <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg flex items-center gap-2 border border-red-100">
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg flex items-center gap-2 border border-red-100"
+              >
                 <FaTimes className="text-red-500 flex-shrink-0" />
                 <p>{error}</p>
-              </div>
+              </motion.div>
             )}
             
             <div className="flex justify-center mt-8">
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 type="submit"
                 disabled={isSubmitting}
                 className={`px-8 py-3 bg-[#5a6b46] text-[#f8f5eb] rounded-full hover:bg-[#5a6b46]/90 transition-colors flex items-center gap-2 shadow-sm ${
@@ -296,7 +333,7 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
               >
                 {isSubmitting ? 'Se trimite...' : 'Trimite răspunsul'}
                 {!isSubmitting && <FaCheck />}
-              </button>
+              </motion.button>
             </div>
             
             {/* Decorative divider */}
@@ -308,7 +345,7 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
           </form>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
