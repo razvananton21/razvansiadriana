@@ -162,7 +162,7 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
               <div>
                 <h3 className="text-xl font-serif text-amber-700 mb-3 italic">Ne pare rău că nu puteți veni</h3>
                 <p className="text-[#5a6b46]/80 mb-6">
-                  Răspunsul dumneavoastră a fost înregistrat. Vă mulțumim pentru răspuns și vă vom ține la curent cu evenimentele viitoare!
+                  Vă mulțumim pentru răspuns!
                 </p>
               </div>
             )}
