@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import { FaChurch, FaGlassCheers, FaRing } from 'react-icons/fa';
 import { MdLocationOn } from 'react-icons/md';
 import { HiOutlineCalendar } from 'react-icons/hi';
+import { atcb_action } from 'add-to-calendar-button';
+import '../styles/atcb.css';
 
 const EventDetails = () => {
   const [activeTab, setActiveTab] = useState('civil');
@@ -16,7 +18,11 @@ const EventDetails = () => {
       date: '5 Septembrie, 2025',
       location: 'Teatrul Maior Gh. Pastia',
       address: 'Strada Republicii 71, Focșani',
-      icon: <FaRing className="text-3xl text-primary" />
+      icon: <FaRing className="text-3xl text-primary" />,
+      dateTime: {
+        start: '2025-09-05T13:45:00',
+        end: '2025-09-05T14:30:00',
+      }
     },
     ceremony: {
       title: 'Cununia Religioasă',
@@ -24,7 +30,11 @@ const EventDetails = () => {
       date: '5 Septembrie, 2025',
       location: 'Biserica Sf. Pantelimon',
       address: 'Strada Cuza Voda, Focșani (Curtea Spitalului Județean)',
-      icon: <FaChurch className="text-3xl text-primary" />
+      icon: <FaChurch className="text-3xl text-primary" />,
+      dateTime: {
+        start: '2025-09-05T18:00:00',
+        end: '2025-09-05T19:30:00',
+      }
     },
     reception: {
       title: 'Petrecere',
@@ -32,11 +42,32 @@ const EventDetails = () => {
       date: '5 Septembrie, 2025',
       location: 'Restaurant Hora Miresei',
       address: 'Hora Miresei, Vânători 627395',
-      icon: <FaGlassCheers className="text-3xl text-primary" />
+      icon: <FaGlassCheers className="text-3xl text-primary" />,
+      dateTime: {
+        start: '2025-09-05T20:00:00',
+        end: '2025-09-06T04:00:00',
+      }
     },
   };
   
   const activeEvent = events[activeTab as keyof typeof events];
+
+  const handleAddToCalendar = (event: typeof activeEvent) => {
+    const config = {
+      name: event.title,
+      description: `Nuntă Razvan & Andreea - ${event.title}`,
+      startDate: event.dateTime.start.split('T')[0],
+      endDate: event.dateTime.end.split('T')[0],
+      startTime: event.dateTime.start.split('T')[1],
+      endTime: event.dateTime.end.split('T')[1],
+      location: `${event.location}, ${event.address}`,
+      options: ['Apple', 'Google', 'iCal', 'Microsoft365', 'Outlook.com', 'Yahoo'] as Array<'Apple' | 'Google' | 'iCal' | 'Microsoft365' | 'Outlook.com' | 'Yahoo' | 'MicrosoftTeams'>,
+      timeZone: 'Europe/Bucharest',
+      iCalFileName: `Nunta-Razvan-Andreea-${event.title.replace(/\s+/g, '-')}`,
+    };
+    
+    atcb_action(config);
+  };
   
   return (
     <div className="max-w-4xl mx-auto">
@@ -90,7 +121,7 @@ const EventDetails = () => {
             
             <p className="text-gray-700 mb-4">{activeEvent.address}</p>
             
-            <div className="mt-6">
+            <div className="mt-6 flex flex-col md:flex-row gap-4 items-center md:items-start">
               <a
                 href={`https://maps.google.com/?q=${encodeURIComponent(activeEvent.location + ', ' + activeEvent.address)}`}
                 target="_blank"
@@ -100,6 +131,14 @@ const EventDetails = () => {
                 <MdLocationOn />
                 <span>Vezi pe hartă</span>
               </a>
+              
+              <button
+                onClick={() => handleAddToCalendar(activeEvent)}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-full hover:bg-primary/90 transition-colors"
+              >
+                <HiOutlineCalendar />
+                <span>Adaugă în calendar</span>
+              </button>
             </div>
           </div>
         </div>
