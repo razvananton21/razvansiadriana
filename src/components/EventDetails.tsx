@@ -5,8 +5,6 @@ import { motion } from 'framer-motion';
 import { FaChurch, FaGlassCheers, FaRing } from 'react-icons/fa';
 import { MdLocationOn } from 'react-icons/md';
 import { HiOutlineCalendar } from 'react-icons/hi';
-import { atcb_action } from 'add-to-calendar-button';
-import '../styles/atcb.css';
 
 const EventDetails = () => {
   const [activeTab, setActiveTab] = useState('civil');
@@ -53,20 +51,40 @@ const EventDetails = () => {
   const activeEvent = events[activeTab as keyof typeof events];
 
   const handleAddToCalendar = (event: typeof activeEvent) => {
-    const config = {
-      name: event.title,
-      description: `Nuntă Razvan & Andreea - ${event.title}`,
-      startDate: event.dateTime.start.split('T')[0],
-      endDate: event.dateTime.end.split('T')[0],
-      startTime: event.dateTime.start.split('T')[1],
-      endTime: event.dateTime.end.split('T')[1],
-      location: `${event.location}, ${event.address}`,
-      options: ['Apple', 'Google', 'iCal', 'Microsoft365', 'Outlook.com', 'Yahoo'] as Array<'Apple' | 'Google' | 'iCal' | 'Microsoft365' | 'Outlook.com' | 'Yahoo' | 'MicrosoftTeams'>,
-      timeZone: 'Europe/Bucharest',
-      iCalFileName: `Nunta-Razvan-Andreea-${event.title.replace(/\s+/g, '-')}`,
-    };
+    // Create iCal content
+    const icalContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Nunta Razvan & Andreea//NONSGML v1.0//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'BEGIN:VEVENT',
+      `SUMMARY:${event.title} - Nuntă Razvan & Andreea`,
+      `DTSTART;TZID=Europe/Bucharest:${event.dateTime.start.replace(/[-:]/g, '')}`,
+      `DTEND;TZID=Europe/Bucharest:${event.dateTime.end.replace(/[-:]/g, '')}`,
+      `LOCATION:${event.location}, ${event.address}`,
+      `DESCRIPTION:Nuntă Razvan & Andreea - ${event.title}`,
+      'BEGIN:VALARM',
+      'ACTION:DISPLAY',
+      'DESCRIPTION:Reminder',
+      'TRIGGER:-PT1H',
+      'END:VALARM',
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
     
-    atcb_action(config);
+    // Create a Blob with the iCal content
+    const blob = new Blob([icalContent], { type: 'text/calendar;charset=utf-8' });
+    
+    // Create a link element
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `Nunta-Razvan-Andreea-${event.title.replace(/\s+/g, '-')}.ics`;
+    
+    // Append to the document, click it, and remove it
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
   
   return (
