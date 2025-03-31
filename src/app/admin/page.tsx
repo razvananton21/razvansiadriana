@@ -27,7 +27,7 @@ export default function AdminPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     // Replace 'your-password' with your desired password
-    if (password === 'wedding2025') {
+    if (password === 'wedding2025anton') {
       setIsAuthenticated(true);
       localStorage.setItem('rsvp_admin_auth', 'true');
     } else {
