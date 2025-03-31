@@ -17,6 +17,9 @@ export default function AdminPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [copying, setCopying] = useState<string | null>(null);
   
+  // Custom message for invitation links
+  const [customMessage, setCustomMessage] = useState('');
+  
   // Sorting and filtering
   const [sortField, setSortField] = useState<string>('created_at');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
@@ -27,7 +30,7 @@ export default function AdminPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     // Replace 'your-password' with your desired password
-    if (password === 'wedding2025anton') {
+    if (password === 'wedding2025') {
       setIsAuthenticated(true);
       localStorage.setItem('rsvp_admin_auth', 'true');
     } else {
@@ -41,10 +44,23 @@ export default function AdminPage() {
       setIsAuthenticated(true);
     }
     
+    // Load saved custom message from localStorage
+    const savedMessage = localStorage.getItem('invitation_custom_message');
+    if (savedMessage) {
+      setCustomMessage(savedMessage);
+    }
+    
     if (isAuthenticated) {
       loadData();
     }
   }, [isAuthenticated]);
+  
+  // Save custom message to localStorage when it changes
+  useEffect(() => {
+    if (customMessage) {
+      localStorage.setItem('invitation_custom_message', customMessage);
+    }
+  }, [customMessage]);
   
   const loadData = async () => {
     setLoading(true);
@@ -96,11 +112,18 @@ export default function AdminPage() {
     return `${host}?token=${token}`;
   };
   
-  // Copy invitation URL to clipboard
+  // Copy invitation URL to clipboard with custom message
   const copyToClipboard = async (token: string) => {
     try {
       const url = getInvitationUrl(token);
-      await navigator.clipboard.writeText(url);
+      let textToCopy = url;
+      
+      // Add custom message if exists
+      if (customMessage.trim()) {
+        textToCopy = `${customMessage.trim()}\n\n${url}`;
+      }
+      
+      await navigator.clipboard.writeText(textToCopy);
       setCopying(token);
       setTimeout(() => setCopying(null), 1500);
     } catch (err) {
@@ -391,6 +414,27 @@ export default function AdminPage() {
           />
         </div>
         
+        {/* Custom Message for Links */}
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <h2 className="text-xl font-serif text-primary mb-4">Mesaj Personalizat pentru Link-uri</h2>
+          <div className="space-y-2">
+            <label htmlFor="customMessage" className="block text-sm font-medium text-gray-700">
+              Adaugă un mesaj care va fi inclus cu fiecare link de invitație copiat
+            </label>
+            <textarea
+              id="customMessage"
+              rows={3}
+              value={customMessage}
+              onChange={(e) => setCustomMessage(e.target.value)}
+              placeholder="Dragă invitat, te așteptăm cu drag la nunta noastră. Confirmă-ți participarea folosind link-ul de mai jos:"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            ></textarea>
+            <p className="text-sm text-gray-500">
+              Acest mesaj va fi adăugat automat înainte de link când folosești butonul "Copiază Link".
+            </p>
+          </div>
+        </div>
+        
         {/* Token Generation Form */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-xl font-serif text-primary mb-4">Generează Invitație Nouă</h2>
@@ -623,13 +667,23 @@ export default function AdminPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <button
-                          onClick={() => copyToClipboard(token.token)}
-                          className="text-blue-600 hover:text-blue-800 flex items-center"
-                        >
-                          <FaCopy className="mr-1" />
-                          {copying === token.token ? 'Copiat!' : 'Copiază Link'}
-                        </button>
+                        <div className="relative group">
+                          <button
+                            onClick={() => copyToClipboard(token.token)}
+                            className="text-blue-600 hover:text-blue-800 flex items-center"
+                            title="Copiază link-ul cu mesajul personalizat"
+                          >
+                            <FaCopy className="mr-1" />
+                            {copying === token.token ? 'Copiat!' : 'Copiază Link'}
+                          </button>
+                          {customMessage && (
+                            <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 max-w-xs z-10">
+                              <div className="truncate font-semibold mb-1">Se va copia:</div>
+                              <div className="italic">{customMessage}</div>
+                              <div className="mt-1 text-blue-300 truncate">{getInvitationUrl(token.token)}</div>
+                            </div>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

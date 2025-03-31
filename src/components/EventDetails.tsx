@@ -11,7 +11,7 @@ const EventDetails = () => {
   
   const events = {
     civil: {
-      title: 'Cununia Civilă',
+      title: 'Cununia civilă',
       time: '13:45',
       date: '5 Septembrie, 2025',
       location: 'Teatrul Maior Gh. Pastia',
@@ -23,7 +23,7 @@ const EventDetails = () => {
       }
     },
     ceremony: {
-      title: 'Cununia Religioasă',
+      title: 'Cununia religioasă',
       time: '18:00',
       date: '5 Septembrie, 2025',
       location: 'Biserica Sf. Pantelimon',
@@ -35,7 +35,7 @@ const EventDetails = () => {
       }
     },
     reception: {
-      title: 'Petrecere',
+      title: 'Petrecerea',
       time: '20:00',
       date: '5 Septembrie, 2025',
       location: 'Restaurant Hora Miresei',
@@ -89,7 +89,7 @@ const EventDetails = () => {
   
   return (
     <div className="max-w-4xl mx-auto relative py-6">
-      <h2 className="text-3xl font-serif text-[#5a6b46] text-center mb-8 italic">Detalii Eveniment</h2>
+      <h2 className="text-3xl font-serif text-[#5a6b46] text-center mb-8 italic">Detalii eveniment</h2>
       
       <div className="flex justify-center mb-8">
         <motion.div 

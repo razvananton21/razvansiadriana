@@ -93,7 +93,7 @@ const PDFInvitation = () => {
               </div>
               <div className="absolute bottom-4 left-0 right-0 text-center">
                 <p className="text-primary text-sm font-serif bg-white/80 inline-block px-4 py-1 rounded-full">
-                  Atinge pentru a întoarce înapoi
+                  Atinge pentru a întoarce
                 </p>
               </div>
             </div>

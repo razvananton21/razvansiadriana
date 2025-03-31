@@ -77,7 +77,7 @@ const InvitationCard = () => {
                     </div>
                   </div>
                   <div className="mt-4 text-sm text-gray-500">
-                    Atinge pentru a întoarce înapoi
+                    Atinge pentru a întoarce
                   </div>
                 </div>
               </div>

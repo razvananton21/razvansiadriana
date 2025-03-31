@@ -193,7 +193,7 @@ export default function Home() {
                   transition={{ duration: 0.5, delay: 0.3 }}
                   className="text-3xl font-serif text-[#5a6b46] mb-6 italic"
                 >
-                  Vă invităm să sărbătoriți alături de noi
+                  Vă invităm să sărbătoriți alături de noi!
                 </motion.h2>
                 
                 <motion.p 
@@ -202,7 +202,7 @@ export default function Home() {
                   transition={{ duration: 0.5, delay: 0.4 }}
                   className="text-lg max-w-2xl mx-auto mb-8 text-[#5a6b46]/90"
                 >
-                  Am fi onorați sǎ vǎ avem alaturi. Vă rugǎm sǎ ne confirmați prezența în aceastǎ zi specialǎ pentru noi.
+                  Am fi onorați sǎ vǎ avem alǎturi. Vă rugǎm sǎ ne confirmați prezența, apǎsând pe butonul de mai jos.
                 </motion.p>
                 
                 <motion.div 
