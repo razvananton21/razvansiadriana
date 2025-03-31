@@ -55,15 +55,15 @@ const EventDetails = () => {
     const icalContent = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//Nunta Razvan & Andreea//NONSGML v1.0//EN',
+      'PRODID:-//Nunta Razvan & Adriana//NONSGML v1.0//EN',
       'CALSCALE:GREGORIAN',
       'METHOD:PUBLISH',
       'BEGIN:VEVENT',
-      `SUMMARY:${event.title} - Nuntă Razvan & Andreea`,
+      `SUMMARY:${event.title} - Nuntă Razvan & Adriana`,
       `DTSTART;TZID=Europe/Bucharest:${event.dateTime.start.replace(/[-:]/g, '')}`,
       `DTEND;TZID=Europe/Bucharest:${event.dateTime.end.replace(/[-:]/g, '')}`,
       `LOCATION:${event.location}, ${event.address}`,
-      `DESCRIPTION:Nuntă Razvan & Andreea - ${event.title}`,
+      `DESCRIPTION:Nuntă Razvan & Adriana - ${event.title}`,
       'BEGIN:VALARM',
       'ACTION:DISPLAY',
       'DESCRIPTION:Reminder',
@@ -79,7 +79,7 @@ const EventDetails = () => {
     // Create a link element
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `Nunta-Razvan-Andreea-${event.title.replace(/\s+/g, '-')}.ics`;
+    link.download = `Nunta-Razvan-Adriana-${event.title.replace(/\s+/g, '-')}.ics`;
     
     // Append to the document, click it, and remove it
     document.body.appendChild(link);
