@@ -15,8 +15,21 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Razvan & Partner's Wedding Invitation",
-  description: "Wedding invitation and RSVP for our special day",
+  title: "Rǎzvan & Adriana - Invitație la nuntă",
+  description: "Invitație la nuntă și confirmare participare",
+  manifest: '/manifest.json',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon.svg', type: 'image/svg+xml' }
+    ],
+    apple: {
+      url: '/apple-touch-icon.png',
+      sizes: '180x180',
+      type: 'image/png',
+    },
+  },
+  themeColor: '#5a6b46',
 };
 
 export default function RootLayout({
@@ -26,6 +39,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#5a6b46" />
+      </head>
       <body 
         className={`${montserrat.variable} ${playfair.variable} antialiased font-sans bg-background text-[#4A3728]`}
       >

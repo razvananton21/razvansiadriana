@@ -89,7 +89,7 @@ const RSVPConfirmation = ({ className = '', tokenData }: RSVPConfirmationProps) 
         </div>
         
         <div className="text-[#5a6b46]/60 text-sm mt-4">
-          © 2025 Nunta Razvan & Adriana
+          © 2025 Nunta Rǎzvan & Adriana
         </div>
       </div>
     </div>

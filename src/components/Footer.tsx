@@ -17,7 +17,7 @@ const Footer = () => {
           Abia așteptăm să sărbătorim împreună cu voi!
         </p>
         <p className="text-xs text-text mt-4">
-          &copy; {currentYear} Nunta Razvan & Adriana
+          &copy; {currentYear} Nunta Rǎzvan & Adriana
         </p>
       </div>
     </footer>
