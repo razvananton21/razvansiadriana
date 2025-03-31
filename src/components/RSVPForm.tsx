@@ -1,15 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaTimes, FaCheck, FaUtensils, FaRegSadTear, FaHeart } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { submitRSVP } from '@/lib/rsvp';
+import { validateToken, markTokenAsViewed, markTokenAsCompleted } from '@/lib/tokens';
 
 interface RSVPFormProps {
   onClose: () => void;
+  invitationToken?: string; // Optional token from URL
 }
 
-const RSVPForm = ({ onClose }: RSVPFormProps) => {
+const RSVPForm = ({ onClose, invitationToken }: RSVPFormProps) => {
   const [formData, setFormData] = useState({
     lastName: '',
     firstName: '',
@@ -26,6 +28,37 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
   const [error, setError] = useState('');
   const [debugInfo, setDebugInfo] = useState<string | null>(null);
   const [submittedAttending, setSubmittedAttending] = useState<boolean>(true);
+  const [tokenError, setTokenError] = useState<boolean>(false); // New state for token errors
+  
+  // Check token validity on mount
+  useEffect(() => {
+    const checkToken = async () => {
+      if (!invitationToken) {
+        setTokenError(true);
+        setError('Link-ul de invitație nu este valid. Vă rugăm să folosiți link-ul primit prin invitație.');
+        return;
+      }
+      
+      try {
+        // Validate the token
+        const { valid } = await validateToken(invitationToken);
+        
+        if (!valid) {
+          setTokenError(true);
+          setError('Link-ul de invitație nu este valid. Vă rugăm să folosiți link-ul primit prin invitație.');
+          return;
+        }
+        
+        // Mark token as viewed when form is opened
+        await markTokenAsViewed(invitationToken);
+      } catch (err) {
+        console.error('Error validating token:', err);
+        setTokenError(true);
+      }
+    };
+    
+    checkToken();
+  }, [invitationToken]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -43,10 +76,19 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
     setIsSubmitting(true);
     setError('');
     setDebugInfo(null);
+    setTokenError(false);
     
     // Validate form
-    if (!formData.lastName || !formData.firstName || !formData.email || !formData.phone || !formData.attending) {
+    if (!formData.lastName || !formData.firstName || !formData.phone || !formData.attending) {
       setError('Vă rugăm să completați toate câmpurile obligatorii.');
+      setIsSubmitting(false);
+      return;
+    }
+    
+    // Validate invitation token
+    if (!invitationToken) {
+      setTokenError(true);
+      setError('Link-ul de invitație nu este valid. Vă rugăm să folosiți link-ul primit prin invitație.');
       setIsSubmitting(false);
       return;
     }
@@ -62,12 +104,16 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
         attending: isAttending,
         vegetarian_menu: formData.vegetarianMenu,
         bringing_plus_one: formData.bringingPlusOne,
-        message: formData.message
+        message: formData.message,
+        invitation_token: invitationToken
       };
       
       setDebugInfo(`Submitting data: ${JSON.stringify(data)}`);
       
       await submitRSVP(data);
+      
+      // Mark token as completed after successful submission
+      await markTokenAsCompleted(invitationToken);
       
       // Store the attendance status and name in localStorage
       localStorage.setItem('rsvpStatus', isAttending ? 'attending' : 'not-attending');
@@ -78,7 +124,15 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
       setIsSubmitted(true);
     } catch (err) {
       console.error('Error submitting form:', err);
-      setError('A apărut o eroare. Vă rugăm să încercați din nou.');
+      
+      // Check if this is a used token error
+      if (err instanceof Error && err.message.includes('invitație a fost deja folosită')) {
+        setTokenError(true);
+        setError('Această invitație a fost deja folosită.');
+      } else {
+        setError('A apărut o eroare. Vă rugăm să încercați din nou.');
+      }
+      
       if (err instanceof Error) {
         setDebugInfo(`Error: ${err.message}`);
       } else {
@@ -94,7 +148,7 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.2 }}
-      className="bg-[#f8f5eb] rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-[#5a6b46]/20"
+      className="bg-[#f8f5eb] rounded-lg shadow-xl w-full max-h-[90vh] overflow-y-auto border border-[#5a6b46]/20"
     >
       <div className="p-6 relative">
         {/* Decorative elements */}
@@ -124,7 +178,44 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
           </motion.button>
         </div>
         
-        {isSubmitted ? (
+        {tokenError ? (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="text-center py-6"
+          >
+            <motion.div 
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 260, 
+                damping: 20,
+                delay: 0.1 
+              }}
+              className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-red-100"
+            >
+              <FaTimes className="text-3xl text-red-500" />
+            </motion.div>
+            
+            <div>
+              <h3 className="text-xl font-serif text-red-600 mb-3 italic">Link invalid</h3>
+              <p className="text-[#5a6b46]/80 mb-6">
+                Link-ul de invitație nu este valid sau a fost deja folosit. Vă rugăm să verificați că ați primit link-ul corect de invitație.
+              </p>
+            </div>
+            
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onClose}
+              className="px-6 py-2 text-[#f8f5eb] bg-red-500 rounded-full hover:bg-opacity-90 transition-colors shadow-sm"
+            >
+              Închide
+            </motion.button>
+          </motion.div>
+        ) : isSubmitted ? (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -208,19 +299,6 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
               </div>
               
               <div className="group">
-                <label htmlFor="email" className="block text-[#5a6b46] mb-1 font-medium">Email *</label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 bg-[#f8f5eb] border border-[#5a6b46]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a6b46]/50 focus:border-transparent transition-all group-hover:border-[#5a6b46]/50"
-                  required
-                />
-              </div>
-              
-              <div className="group">
                 <label htmlFor="phone" className="block text-[#5a6b46] mb-1 font-medium">Telefon *</label>
                 <input
                   type="tel"
@@ -230,6 +308,18 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
                   onChange={handleChange}
                   className="w-full px-4 py-2 bg-[#f8f5eb] border border-[#5a6b46]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a6b46]/50 focus:border-transparent transition-all group-hover:border-[#5a6b46]/50"
                   required
+                />
+              </div>
+              
+              <div className="group">
+                <label htmlFor="email" className="block text-[#5a6b46] mb-1 font-medium">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 bg-[#f8f5eb] border border-[#5a6b46]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a6b46]/50 focus:border-transparent transition-all group-hover:border-[#5a6b46]/50"
                 />
               </div>
               
@@ -262,38 +352,55 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
               </div>
               
               {formData.attending === 'yes' && (
-                <motion.div 
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="bg-[#5a6b46]/5 p-4 rounded-lg border border-[#5a6b46]/10 hover:border-[#5a6b46]/20 transition-colors"
-                >
-                  <p className="text-[#5a6b46] mb-3 font-medium">Opțiuni suplimentare</p>
-                  <div className="space-y-3">
-                    <label className="flex items-center cursor-pointer hover:text-[#5a6b46] transition-colors">
-                      <input
-                        type="checkbox"
-                        name="vegetarianMenu"
-                        checked={formData.vegetarianMenu}
-                        onChange={handleChange}
-                        className="form-checkbox text-[#5a6b46] focus:ring-[#5a6b46] h-4 w-4 rounded"
-                      />
-                      <span className="ml-2 text-[#5a6b46]/90">Meniu vegetarian</span>
-                    </label>
-                    
-                    <label className="flex items-center cursor-pointer hover:text-[#5a6b46] transition-colors">
-                      <input
-                        type="checkbox"
-                        name="bringingPlusOne"
-                        checked={formData.bringingPlusOne}
-                        onChange={handleChange}
-                        className="form-checkbox text-[#5a6b46] focus:ring-[#5a6b46] h-4 w-4 rounded"
-                      />
-                      <span className="ml-2 text-[#5a6b46]/90">Voi veni însoțit</span>
-                    </label>
+                <>
+                  <div className="bg-[#5a6b46]/5 p-4 rounded-lg border border-[#5a6b46]/10 hover:border-[#5a6b46]/20 transition-colors">
+                    <label className="block text-[#5a6b46] mb-2 font-medium">Veți veni însoțit?</label>
+                    <div className="flex gap-6 mt-1">
+                      <label className="inline-flex items-center cursor-pointer hover:text-[#5a6b46] transition-colors">
+                        <input
+                          type="radio"
+                          name="bringingPlusOne"
+                          checked={formData.bringingPlusOne === true}
+                          onChange={() => setFormData(prev => ({ ...prev, bringingPlusOne: true }))}
+                          className="form-radio text-[#5a6b46] focus:ring-[#5a6b46] h-4 w-4"
+                        />
+                        <span className="ml-2 text-[#5a6b46]">Da</span>
+                      </label>
+                      <label className="inline-flex items-center cursor-pointer hover:text-[#5a6b46] transition-colors">
+                        <input
+                          type="radio"
+                          name="bringingPlusOne"
+                          checked={formData.bringingPlusOne === false}
+                          onChange={() => setFormData(prev => ({ ...prev, bringingPlusOne: false }))}
+                          className="form-radio text-[#5a6b46] focus:ring-[#5a6b46] h-4 w-4"
+                        />
+                        <span className="ml-2 text-[#5a6b46]">Nu</span>
+                      </label>
+                    </div>
                   </div>
-                </motion.div>
+
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="bg-[#5a6b46]/5 p-4 rounded-lg border border-[#5a6b46]/10 hover:border-[#5a6b46]/20 transition-colors"
+                  >
+                    <p className="text-[#5a6b46] mb-3 font-medium">Opțiuni suplimentare</p>
+                    <div className="space-y-3">
+                      <label className="flex items-center cursor-pointer hover:text-[#5a6b46] transition-colors">
+                        <input
+                          type="checkbox"
+                          name="vegetarianMenu"
+                          checked={formData.vegetarianMenu}
+                          onChange={handleChange}
+                          className="form-checkbox text-[#5a6b46] focus:ring-[#5a6b46] h-4 w-4 rounded"
+                        />
+                        <span className="ml-2 text-[#5a6b46]/90">Meniu vegetarian</span>
+                      </label>
+                    </div>
+                  </motion.div>
+                </>
               )}
               
               <div className="group">
@@ -303,9 +410,9 @@ const RSVPForm = ({ onClose }: RSVPFormProps) => {
                   name="message"
                   value={formData.message}
                   onChange={handleChange}
-                  rows={3}
+                  rows={5}
                   className="w-full px-4 py-2 bg-[#f8f5eb] border border-[#5a6b46]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a6b46]/50 focus:border-transparent transition-all group-hover:border-[#5a6b46]/50"
-                  placeholder="Orice informații suplimentare doriți să ne transmiteți..."
+                  placeholder="Orice informații suplimentare doriți să ne transmiteți (ex. numele persoanei care vă însoțește, veți veni  cu un copil, restricții alimentare, etc.)..."
                 ></textarea>
               </div>
             </div>

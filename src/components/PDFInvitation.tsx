@@ -65,7 +65,7 @@ const PDFInvitation = () => {
             <div className="relative w-full h-full shadow-lg rounded-lg overflow-hidden border-2 border-secondary">
               <div className="relative w-full h-full">
                 <Image 
-                  src="/images/invitation_1.jpeg" 
+                  src="/images/invitation_1.png" 
                   alt="Invitație de Nuntă - Față"
                   fill
                   style={{ objectFit: 'cover' }}
@@ -84,7 +84,7 @@ const PDFInvitation = () => {
             <div className="relative w-full h-full shadow-lg rounded-lg overflow-hidden border-2 border-secondary">
               <div className="relative w-full h-full">
                 <Image 
-                  src="/images/invitation_2.jpeg" 
+                  src="/images/invitation_2.png" 
                   alt="Invitație de Nuntă - Spate"
                   fill
                   style={{ objectFit: 'cover' }}

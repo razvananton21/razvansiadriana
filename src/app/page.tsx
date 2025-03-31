@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from '@/components/Header';
 import PDFInvitation from '@/components/PDFInvitation';
@@ -9,6 +10,7 @@ import RSVPForm from '@/components/RSVPForm';
 import Footer from '@/components/Footer';
 import RSVPConfirmation from '@/components/RSVPConfirmation';
 import { FaHeart } from 'react-icons/fa';
+import { markTokenAsViewed, validateToken } from '@/lib/tokens';
 
 // Animation variants
 const fadeInUp = {
@@ -36,17 +38,73 @@ const staggerContainer = {
 export default function Home() {
   const [isRSVPModalOpen, setIsRSVPModalOpen] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
+  const [invitationToken, setInvitationToken] = useState<string | undefined>(undefined);
+  const [tokenStatus, setTokenStatus] = useState<{
+    valid: boolean;
+    isCompleted: boolean;
+    guestName?: string;
+    attending?: boolean;
+  }>({
+    valid: true,
+    isCompleted: false
+  });
 
   useEffect(() => {
+    // Extract token from URL on client-side
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    if (token) {
+      setInvitationToken(token);
+      
+      // Check token status
+      const checkToken = async () => {
+        try {
+          // Validate the token
+          const { valid, token: tokenData } = await validateToken(token);
+          
+          if (valid && tokenData) {
+            // Mark the token as viewed even if they don't open the RSVP form
+            await markTokenAsViewed(token);
+            
+            // Check if the invitation has already been completed
+            if (tokenData.is_completed) {
+              // Get associated response to extract name and attendance
+              let guestName = tokenData.invitee_name;
+              let attending = false;
+              
+              // If there's a response object with the token data
+              if (tokenData.response) {
+                // Use the first name from the response for a more personal message
+                guestName = tokenData.response.first_name;
+                attending = tokenData.response.attending;
+              }
+              
+              setTokenStatus({
+                valid: true,
+                isCompleted: true,
+                guestName,
+                attending
+              });
+            }
+          } else {
+            setTokenStatus({
+              valid: false,
+              isCompleted: false
+            });
+          }
+        } catch (err) {
+          console.error('Error checking token status:', err);
+        }
+      };
+      
+      checkToken();
+    }
+    
+    // Handle scroll events
     const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      if (scrollTop > 50) {
-        setHasScrolled(true);
-      } else {
-        setHasScrolled(false);
-      }
+      setHasScrolled(window.scrollY > 300);
     };
-
+    
     window.addEventListener('scroll', handleScroll);
     return () => {
       window.removeEventListener('scroll', handleScroll);
@@ -102,80 +160,88 @@ export default function Home() {
           </div>
         </motion.section>
         
-        <motion.section 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-          className="py-12 md:py-16 text-center relative overflow-hidden"
-        >
-          <div className="container mx-auto px-4 relative z-10">
-            <motion.div 
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="max-w-2xl mx-auto bg-[#f8f5eb]/80 rounded-lg p-8 shadow-sm border border-[#5a6b46]/10 relative"
-              whileHover={{ boxShadow: "0 8px 24px rgba(90, 107, 70, 0.1)" }}
-            >
-              {/* Decorative elements */}
-              <div className="absolute top-4 left-4 w-12 h-12 opacity-10">
-                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M10 20C15 15 25 18 30 25C25 28 15 28 10 20Z" fill="#5a6b46"/>
-                </svg>
-              </div>
-              <div className="absolute bottom-4 right-4 w-12 h-12 opacity-10 transform rotate-180">
-                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M10 20C15 15 25 18 30 25C25 28 15 28 10 20Z" fill="#5a6b46"/>
-                </svg>
-              </div>
-              
-              <motion.h2 
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                className="text-3xl font-serif text-[#5a6b46] mb-6 italic"
-              >
-                Vă invităm să sărbătoriți alături de noi
-              </motion.h2>
-              
-              <motion.p 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                className="text-lg max-w-2xl mx-auto mb-8 text-[#5a6b46]/90"
-              >
-                Am fi onorați sǎ vǎ avem alaturi. Vă rugǎm sǎ ne confirmați prezența în aceastǎ zi specialǎ pentru noi.
-              </motion.p>
-              
+        {!tokenStatus.isCompleted && (
+          <motion.section 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="py-12 md:py-16 text-center relative overflow-hidden"
+          >
+            <div className="container mx-auto px-4 relative z-10">
               <motion.div 
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.5 }}
-                className="flex items-center justify-center text-[#5a6b46] mb-6"
-              >
-                <div className="w-12 h-px bg-[#5a6b46]/30"></div>
-                <div className="mx-3 bg-[#5a6b46]/10 w-8 h-8 rounded-full flex items-center justify-center">
-                  <FaHeart className="text-[#5a6b46] text-sm" />
-                </div>
-                <div className="w-12 h-px bg-[#5a6b46]/30"></div>
-              </motion.div>
-              
-              <motion.button
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.6 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={openRSVPModal}
-                className="bg-[#5a6b46] text-[#f8f5eb] px-8 py-3 rounded-full hover:bg-[#5a6b46]/90 transition-colors text-lg shadow-sm flex items-center gap-2 mx-auto"
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="max-w-2xl mx-auto bg-[#f8f5eb]/80 rounded-lg p-8 shadow-sm border border-[#5a6b46]/10 relative"
+                whileHover={{ boxShadow: "0 8px 24px rgba(90, 107, 70, 0.1)" }}
               >
-                <span>Confirmă Participarea</span>
-                <FaHeart className="text-sm" />
-              </motion.button>
-            </motion.div>
-          </div>
-        </motion.section>
+                {/* Decorative elements */}
+                <div className="absolute top-4 left-4 w-12 h-12 opacity-10">
+                  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 20C15 15 25 18 30 25C25 28 15 28 10 20Z" fill="#5a6b46"/>
+                  </svg>
+                </div>
+                <div className="absolute bottom-4 right-4 w-12 h-12 opacity-10 transform rotate-180">
+                  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 20C15 15 25 18 30 25C25 28 15 28 10 20Z" fill="#5a6b46"/>
+                  </svg>
+                </div>
+                
+                <motion.h2 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                  className="text-3xl font-serif text-[#5a6b46] mb-6 italic"
+                >
+                  Vă invităm să sărbătoriți alături de noi
+                </motion.h2>
+                
+                <motion.p 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                  className="text-lg max-w-2xl mx-auto mb-8 text-[#5a6b46]/90"
+                >
+                  Am fi onorați sǎ vǎ avem alaturi. Vă rugǎm sǎ ne confirmați prezența în aceastǎ zi specialǎ pentru noi.
+                </motion.p>
+                
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.5 }}
+                  className="flex items-center justify-center text-[#5a6b46] mb-6"
+                >
+                  <div className="w-12 h-px bg-[#5a6b46]/30"></div>
+                  <div className="mx-3 bg-[#5a6b46]/10 w-8 h-8 rounded-full flex items-center justify-center">
+                    <FaHeart className="text-[#5a6b46] text-sm" />
+                  </div>
+                  <div className="w-12 h-px bg-[#5a6b46]/30"></div>
+                </motion.div>
+                
+                <motion.button
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.6 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={openRSVPModal}
+                  className="bg-[#5a6b46] text-[#f8f5eb] px-8 py-3 rounded-full hover:bg-[#5a6b46]/90 transition-colors text-lg shadow-sm flex items-center gap-2 mx-auto"
+                >
+                  <span>Confirmă Participarea</span>
+                  <FaHeart className="text-sm" />
+                </motion.button>
+              </motion.div>
+            </div>
+          </motion.section>
+        )}
         
-        <RSVPConfirmation className="mt-8 mb-4" />
+        <RSVPConfirmation 
+          className="mt-8 mb-4"
+          tokenData={tokenStatus.isCompleted ? {
+            name: tokenStatus.guestName,
+            attending: tokenStatus.attending
+          } : undefined}
+        />
       </main>
       
       <Footer />
@@ -190,8 +256,8 @@ export default function Home() {
             exit={{ opacity: 0 }}
             onClick={closeRSVPModal}
           >
-            <div onClick={(e) => e.stopPropagation()}>
-              <RSVPForm onClose={closeRSVPModal} />
+            <div className='w-full' onClick={(e) => e.stopPropagation()}>
+              <RSVPForm onClose={closeRSVPModal} invitationToken={invitationToken} />
             </div>
           </motion.div>
         )}

@@ -5,28 +5,52 @@ import { FaHeart } from 'react-icons/fa';
 
 interface RSVPConfirmationProps {
   className?: string;
+  tokenData?: {
+    name?: string;
+    attending?: boolean;
+  };
 }
 
-const RSVPConfirmation = ({ className = '' }: RSVPConfirmationProps) => {
+const RSVPConfirmation = ({ className = '', tokenData }: RSVPConfirmationProps) => {
   const [rsvpStatus, setRsvpStatus] = useState<string | null>(null);
   const [name, setName] = useState<string | null>(null);
+  const [shouldShow, setShouldShow] = useState(false);
 
   useEffect(() => {
-    // Check if there's a stored RSVP status in localStorage
+    // If we're viewing with a token (URL has token parameter)
+    const hasTokenParam = new URLSearchParams(window.location.search).has('token');
+    
+    // If we have token data (from already completed RSVP), always use it and show
+    if (tokenData) {
+      setName(tokenData.name || null);
+      setRsvpStatus(tokenData.attending ? 'attending' : 'not-attending');
+      setShouldShow(true);
+      return;
+    }
+    
+    // If we're viewing with a token but don't have token data,
+    // don't show anything (token hasn't been completed)
+    if (hasTokenParam && !tokenData) {
+      setShouldShow(false);
+      return;
+    }
+    
+    // Otherwise, for users without tokens, use localStorage if available
     const storedStatus = localStorage.getItem('rsvpStatus');
     const storedName = localStorage.getItem('rsvpName');
     
     if (storedStatus) {
       setRsvpStatus(storedStatus);
+      setShouldShow(true);
     }
     
     if (storedName) {
       setName(storedName);
     }
-  }, []);
+  }, [tokenData]);
 
-  if (!rsvpStatus) {
-    return null; // Don't show anything if no RSVP has been submitted
+  if (!shouldShow || !rsvpStatus) {
+    return null; // Don't show anything if conditions aren't met
   }
 
   return (

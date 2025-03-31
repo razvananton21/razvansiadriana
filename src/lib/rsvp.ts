@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { validateToken } from './tokens';
 import type { RSVPResponse } from '@/types/supabase';
 
 /**
@@ -9,6 +10,19 @@ export async function submitRSVP(data: Omit<RSVPResponse, 'id' | 'created_at'>) 
   console.log('Supabase client:', supabase);
   
   try {
+    // First, validate that the token exists and is valid
+    const { valid, token } = await validateToken(data.invitation_token);
+    
+    if (!valid) {
+      throw new Error('Link-ul de invitație nu este valid.');
+    }
+    
+    // Check if the token has been completed (submission already made)
+    if (token?.is_completed) {
+      throw new Error('Această invitație a fost deja folosită.');
+    }
+    
+    // If token is valid, proceed with submission
     const { data: responseData, error } = await supabase
       .from('rsvp_responses')
       .insert([data])
